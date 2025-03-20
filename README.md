@@ -14,7 +14,7 @@ A customizable countdown timer designed specifically for hackathons, ensuring pa
 
 🌈 **Custom Colors:** Change the countdown colors to match your theme.
 
-## 📸 Screenshots
+## 📸 Screenshot
 
 ![Screenshot](Screenshot.png)
 
