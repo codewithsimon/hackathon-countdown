@@ -109,7 +109,7 @@ function App() {
 
   const cardClasses = `transform transition-all duration-500 ${
     isDarkMode
-      ? 'bg-gradient-to-br from-[#B1F0F7]/20 to-[#FADA7A]/20 border-white/10'
+      ? 'bg-gradient-to-br from-[#074799]/50 to-[#009990]/50 border-white/10'
       : 'bg-white/10 border-white/20'
   } backdrop-blur-lg rounded-2xl p-8 w-full max-w-5xl shadow-xl border`;
 
