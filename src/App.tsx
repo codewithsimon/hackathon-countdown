@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, Edit2, Moon, Sun, Trophy, Upload } from 'lucide-react';
+import { Play, Pause, RotateCcw, Edit2, Moon, Sun, Trophy, Upload, Palette } from 'lucide-react';
 
 interface TimeConfig {
   hours: number;
@@ -13,25 +13,62 @@ interface HackathonDetails {
   venue: string;
   endMessage: string;
   logo: string;
+  colors: {
+    light: {
+      from: string;
+      to: string;
+    };
+    dark: {
+      from: string;
+      to: string;
+    };
+  };
 }
 
 function App() {
   const [timeLeft, setTimeLeft] = useState<TimeConfig>({ hours: 0, minutes: 0, seconds: 0 });
   const [isRunning, setIsRunning] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [isEnded, setIsEnded] = useState(false);
   const [initialTime, setInitialTime] = useState<TimeConfig>({ hours: 0, minutes: 0, seconds: 0 });
   const [hackathonDetails, setHackathonDetails] = useState<HackathonDetails>({
-    name: "HackIndia",
+    name: "Hackathon",
     organizer: "Tech Community",
     venue: "Innovation Hub",
     endMessage: "Time's up! Great work everyone! 🎉",
-    logo: ""
+    logo: "",
+    colors: {
+      light: {
+        from: "#074799",
+        to: "#009990"
+      },
+      dark: {
+        from: "#074799",
+        to: "#009990"
+      }
+    }
   });
   const [isEditingDetails, setIsEditingDetails] = useState(false);
+  const [isEditingColors, setIsEditingColors] = useState(false);
   const timerRef = useRef<NodeJS.Timeout>();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Update CSS variables when colors change
+    const root = document.documentElement;
+    if (isDarkMode) {
+      root.style.setProperty('--gradient-from', hackathonDetails.colors.dark.from);
+      root.style.setProperty('--gradient-to', hackathonDetails.colors.dark.to);
+      root.style.setProperty('--card-from', `${hackathonDetails.colors.light.from}33`); // 20% opacity
+      root.style.setProperty('--card-to', `${hackathonDetails.colors.light.to}33`); // 20% opacity
+    } else {
+      root.style.setProperty('--gradient-from', hackathonDetails.colors.light.from);
+      root.style.setProperty('--gradient-to', hackathonDetails.colors.light.to);
+      root.style.setProperty('--card-from', '#ffffff1a'); // 10% white
+      root.style.setProperty('--card-to', '#ffffff1a');
+    }
+  }, [isDarkMode, hackathonDetails.colors]);
 
   useEffect(() => {
     if (isRunning) {
@@ -88,6 +125,11 @@ function App() {
     setIsEditingDetails(false);
   };
 
+  const handleColorsSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsEditingColors(false);
+  };
+
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -101,17 +143,8 @@ function App() {
 
   const formatNumber = (num: number) => num.toString().padStart(2, '0');
 
-  const containerClasses = `min-h-screen transition-colors duration-500 ${
-    isDarkMode 
-      ? 'bg-gradient-to-br from-black to-gray-900' 
-      : 'bg-gradient-to-br from-[#074799] to-[#009990]'
-  }`;
-
-  const cardClasses = `transform transition-all duration-500 ${
-    isDarkMode
-      ? 'bg-gradient-to-br from-[#074799]/50 to-[#009990]/50 border-white/10'
-      : 'bg-white/10 border-white/20'
-  } backdrop-blur-lg rounded-2xl p-8 w-full max-w-5xl shadow-xl border`;
+  const containerClasses = "min-h-screen transition-colors duration-500 bg-gradient-to-br from-[var(--gradient-from)] to-[var(--gradient-to)]";
+  const cardClasses = "transform transition-all duration-500 bg-gradient-to-br from-[var(--card-from)] to-[var(--card-to)] backdrop-blur-lg rounded-2xl p-8 w-full max-w-5xl shadow-xl border border-white/10";
 
   if (isEnded) {
     return (
@@ -151,12 +184,20 @@ function App() {
     <div className={containerClasses + " flex items-center justify-center p-4"}>
       <div className={cardClasses}>
         <div className="flex justify-between items-center mb-8">
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className="text-white/70 hover:text-white transition-colors"
-          >
-            {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
-          </button>
+          <div className="flex gap-4">
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className="text-white/70 hover:text-white transition-colors"
+            >
+              {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
+            </button>
+            <button
+              onClick={() => setIsEditingColors(!isEditingColors)}
+              className="text-white/70 hover:text-white transition-colors"
+            >
+              <Palette size={24} />
+            </button>
+          </div>
           <div className="flex gap-4">
             <button
               onClick={() => fileInputRef.current?.click()}
@@ -180,6 +221,85 @@ function App() {
             </button>
           </div>
         </div>
+
+        {isEditingColors && (
+          <form onSubmit={handleColorsSubmit} className="mb-8 p-4 bg-black/20 rounded-lg border border-white/10">
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h3 className="text-white font-semibold mb-2">Light Mode Colors</h3>
+                <div>
+                  <label className="block text-white/70 text-sm mb-1">From Color</label>
+                  <input
+                    type="color"
+                    value={hackathonDetails.colors.light.from}
+                    onChange={(e) => setHackathonDetails(prev => ({
+                      ...prev,
+                      colors: {
+                        ...prev.colors,
+                        light: { ...prev.colors.light, from: e.target.value }
+                      }
+                    }))}
+                    className="w-full h-10 rounded cursor-pointer"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/70 text-sm mb-1">To Color</label>
+                  <input
+                    type="color"
+                    value={hackathonDetails.colors.light.to}
+                    onChange={(e) => setHackathonDetails(prev => ({
+                      ...prev,
+                      colors: {
+                        ...prev.colors,
+                        light: { ...prev.colors.light, to: e.target.value }
+                      }
+                    }))}
+                    className="w-full h-10 rounded cursor-pointer"
+                  />
+                </div>
+              </div>
+              <div className="space-y-4">
+                <h3 className="text-white font-semibold mb-2">Dark Mode Colors</h3>
+                <div>
+                  <label className="block text-white/70 text-sm mb-1">From Color</label>
+                  <input
+                    type="color"
+                    value={hackathonDetails.colors.dark.from}
+                    onChange={(e) => setHackathonDetails(prev => ({
+                      ...prev,
+                      colors: {
+                        ...prev.colors,
+                        dark: { ...prev.colors.dark, from: e.target.value }
+                      }
+                    }))}
+                    className="w-full h-10 rounded cursor-pointer"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/70 text-sm mb-1">To Color</label>
+                  <input
+                    type="color"
+                    value={hackathonDetails.colors.dark.to}
+                    onChange={(e) => setHackathonDetails(prev => ({
+                      ...prev,
+                      colors: {
+                        ...prev.colors,
+                        dark: { ...prev.colors.dark, to: e.target.value }
+                      }
+                    }))}
+                    className="w-full h-10 rounded cursor-pointer"
+                  />
+                </div>
+              </div>
+            </div>
+            <button
+              type="submit"
+              className="w-full mt-6 bg-white/10 hover:bg-white/20 text-white py-2 rounded-lg transition-colors"
+            >
+              Save Colors
+            </button>
+          </form>
+        )}
 
         {hackathonDetails.logo && (
           <div className="flex justify-center mb-8">
