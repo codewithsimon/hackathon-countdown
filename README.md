@@ -33,7 +33,7 @@ Want to customize it further? Fork this repository and modify it as per your nee
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/hackathon-countdown.git
+git clone https://github.com/codewithsimon/hackathon-countdown.git
 
 # Navigate into the directory
 cd hackathon-countdown
